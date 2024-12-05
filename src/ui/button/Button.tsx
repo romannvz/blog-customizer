@@ -10,9 +10,9 @@ export const Button = ({
 	type,
 }: {
 	title: string;
-	onClick?: () => void;
 	htmlType?: React.ButtonHTMLAttributes<HTMLButtonElement>['type'];
 	type: 'apply' | 'clear';
+	onClick: (type: 'apply' | 'clear') => void;
 }) => {
 	return (
 		<button
@@ -22,7 +22,10 @@ export const Button = ({
 				{ [styles.button_clear]: type === 'clear' }
 			)}
 			type={htmlType}
-			onClick={onClick}>
+			onClick={(event) => {
+				if (type === 'apply') event.preventDefault();
+				onClick(type);
+			}}>
 			<Text weight={800} uppercase>
 				{title}
 			</Text>
