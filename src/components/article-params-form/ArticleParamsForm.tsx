@@ -6,7 +6,7 @@ import { Button } from 'src/ui/button';
 import { Separator } from 'src/ui/separator';
 import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
 
@@ -18,37 +18,74 @@ import {
 	fontSizeOptions,
 	OptionType,
 	ArticleStateType,
+	defaultArticleState,
 } from 'src/constants/articleProps';
 
 type Props = {
-	stateForm: ArticleStateType;
-	setStateForm: (option: OptionType) => void;
-	submitState: () => void;
-	resetState: () => void;
-	stateButton: boolean;
-	setStateButton: () => void;
+	statePage: ArticleStateType;
+	setStatePage: (state: ArticleStateType) => void;
 };
 
 export const ArticleParamsForm = (props: Props) => {
+	const [stateForm, setStateForm] =
+		useState<ArticleStateType>(defaultArticleState);
+
+	const [stateArrow, setStateArrow] = useState<boolean>(false);
+
 	const asideRef = useRef<HTMLDivElement | null>(null);
 
+	const updateStyle = () => props.setStatePage(stateForm);
+
+	const resetStates = () => {
+		setStateForm(defaultArticleState);
+		props.setStatePage(defaultArticleState);
+	};
+
+	const handleSetState = (option: OptionType) =>
+		option.className.includes('font-size')
+			? setStateForm((prevState) => ({
+					...prevState,
+					fontSizeOption: option,
+			  }))
+			: option.className.includes('font')
+			? setStateForm((prevState) => ({
+					...prevState,
+					fontColor: option,
+			  }))
+			: option.className.includes('bg')
+			? setStateForm((prevState) => ({
+					...prevState,
+					backgroundColor: option,
+			  }))
+			: option.className.includes('width')
+			? setStateForm((prevState) => ({
+					...prevState,
+					contentWidth: option,
+			  }))
+			: setStateForm((prevState) => ({
+					...prevState,
+					fontFamilyOption: option,
+			  }));
+
+	const switchArrowButton = () => setStateArrow(!stateArrow);
+
 	useOutsideClickClose({
-		isOpen: props.stateButton,
+		isOpen: stateArrow,
 		rootRef: asideRef,
 		onChange: () => {},
-		onClose: () => props.setStateButton(),
+		onClose: () => switchArrowButton(),
 	});
 
 	const handleAction = (action: 'apply' | 'clear') =>
-		action === 'clear' ? props.resetState() : props.submitState();
+		action === 'clear' ? resetStates() : updateStyle();
 
 	return (
 		<>
-			<ArrowButton isOpen={props.stateButton} onClick={props.setStateButton} />
+			<ArrowButton isOpen={stateArrow} onClick={switchArrowButton} />
 			<aside
 				ref={asideRef}
 				className={clsx(styles.container, {
-					[styles.container_open]: props.stateButton,
+					[styles.container_open]: stateArrow,
 				})}>
 				<form className={styles.form}>
 					<Text as={'h2'} size={31} weight={800} uppercase align='left'>
@@ -56,36 +93,36 @@ export const ArticleParamsForm = (props: Props) => {
 					</Text>
 
 					<Select
-						selected={props.stateForm.fontFamilyOption}
+						selected={stateForm.fontFamilyOption}
 						options={fontFamilyOptions}
 						title='Шрифт'
-						onChange={props.setStateForm}
+						onChange={(option: OptionType) => handleSetState(option)}
 					/>
 					<RadioGroup
 						name='Size'
-						selected={props.stateForm.fontSizeOption}
+						selected={stateForm.fontSizeOption}
 						options={fontSizeOptions}
 						title='Размер шрифта'
-						onChange={props.setStateForm}
+						onChange={(option: OptionType) => handleSetState(option)}
 					/>
 					<Select
-						selected={props.stateForm.fontColor}
+						selected={stateForm.fontColor}
 						options={fontColors}
 						title='Цвет шрифта'
-						onChange={props.setStateForm}
+						onChange={(option: OptionType) => handleSetState(option)}
 					/>
 					<Separator />
 					<Select
-						selected={props.stateForm.backgroundColor}
+						selected={stateForm.backgroundColor}
 						options={backgroundColors}
 						title='Цвет фона'
-						onChange={props.setStateForm}
+						onChange={(option: OptionType) => handleSetState(option)}
 					/>
 					<Select
-						selected={props.stateForm.contentWidth}
+						selected={stateForm.contentWidth}
 						options={contentWidthArr}
 						title='Ширина контента'
-						onChange={props.setStateForm}
+						onChange={(option: OptionType) => handleSetState(option)}
 					/>
 					<div className={styles.bottomContainer}>
 						<Button
